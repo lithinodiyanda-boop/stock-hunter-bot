@@ -283,14 +283,19 @@ def score_stock(symbol):
     if current_price < 5:
         return None
 
-    # Liquidity check
-    avg_daily_value = sum(closes[i] * volumes[i] for i in range(min(20, len(closes)))) / min(20, len(closes))
+    # Liquidity check — volume in shares, value = price x shares
     recent_vol      = sum(volumes[:3]) / 3
-    avg_vol         = sum(volumes[:20]) / 20
+    avg_vol         = sum(volumes[:20]) / 20 if len(volumes) >= 20 else sum(volumes) / len(volumes)
     vol_ratio       = recent_vol / avg_vol if avg_vol > 0 else 0
-    volume_wakeup   = vol_ratio >= 2.0 and avg_daily_value >= 500000
 
-    if avg_daily_value < 1000000 and not volume_wakeup:
+    # Daily traded value in rupees
+    avg_daily_value = current_price * avg_vol
+
+    # Volume wakeup: dead stock coming alive
+    volume_wakeup = vol_ratio >= 2.0 and avg_vol >= 10000  # at least 10k shares avg
+
+    # Minimum liquidity: Rs.5 lakh daily OR volume wakeup
+    if avg_daily_value < 500000 and not volume_wakeup:
         return None
 
     score   = 0
