@@ -23,7 +23,7 @@ TOTAL_CAPITAL  = 100000
 MAX_POSITION   = 25000
 GROSS_TARGET   = 0.065
 STOP_LOSS      = 0.060
-MIN_SCORE      = 55
+MIN_SCORE      = 40
 IST            = pytz.timezone("Asia/Kolkata")
 
 # ============================================================
