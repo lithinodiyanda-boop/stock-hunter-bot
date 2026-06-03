@@ -67,13 +67,18 @@ def parse_bhavcopy(csv_text):
     header = [h.strip().upper() for h in lines[0].split(",")]
 
     try:
-        sym_idx  = header.index("SYMBOL")
-        ser_idx  = header.index("SERIES")
-        close_idx = header.index("CLOSE_PRICE") if "CLOSE_PRICE" in header else header.index("CLOSE")
-        open_idx  = header.index("OPEN_PRICE")  if "OPEN_PRICE"  in header else header.index("OPEN")
-        high_idx  = header.index("HIGH_PRICE")  if "HIGH_PRICE"  in header else header.index("HIGH")
-        low_idx   = header.index("LOW_PRICE")   if "LOW_PRICE"   in header else header.index("LOW")
-        vol_idx   = header.index("TTL_TRD_QNTY") if "TTL_TRD_QNTY" in header else header.index("VOLUME")
+        # UDiFF format (new since July 2024)
+        sym_idx   = next((i for i, h in enumerate(header) if h in ["TCKRSYMB", "SYMBOL"]), None)
+        ser_idx   = next((i for i, h in enumerate(header) if h in ["SCTYSRS", "SERIES"]), None)
+        close_idx = next((i for i, h in enumerate(header) if h in ["CLSPRIC", "CLOSE_PRICE", "CLOSE"]), None)
+        open_idx  = next((i for i, h in enumerate(header) if h in ["OPNPRIC", "OPEN_PRICE", "OPEN"]), None)
+        high_idx  = next((i for i, h in enumerate(header) if h in ["HGHPRIC", "HIGH_PRICE", "HIGH"]), None)
+        low_idx   = next((i for i, h in enumerate(header) if h in ["LWPRIC", "LOW_PRICE", "LOW"]), None)
+        vol_idx   = next((i for i, h in enumerate(header) if h in ["TTLTRADGVOL", "TTL_TRD_QNTY", "VOLUME"]), None)
+
+        if any(x is None for x in [sym_idx, ser_idx, close_idx, vol_idx]):
+            print("Missing required columns. Available: " + str(header))
+            return result
     except ValueError as e:
         print("Header parse error: " + str(e))
         print("Available headers: " + str(header))
