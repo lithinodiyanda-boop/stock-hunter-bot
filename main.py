@@ -357,8 +357,9 @@ def score_stock(symbol):
             score += 5
             reasons.append("Near 50 DMA dip")
 
-    # ── BUCKET 3: QUALITY AND VALUE (30 pts) ──
-    fund = fetch_fundamentals(symbol)
+    # Use cached fundamentals if available (fetched after technical shortlist)
+    fund = fund_cache.get(symbol, default_fundamentals())
+    fund = default_fundamentals()
 
     pe = fund["pe"]
     if 0 < pe < 15:
@@ -487,18 +488,39 @@ def run_scan():
     refresh_today()
     monitor_positions()
 
-    results = []
-    count   = 0
+    # ── STAGE 1: FAST TECHNICAL SCAN (2 mins) ──
+    print("Stage 1: Technical scan...")
+    stage1 = []
+    count  = 0
 
     for symbol in list(nse_data_cache.keys()):
         if symbol in alerted_today:
             continue
         count += 1
-        if count % 100 == 0:
+        if count % 200 == 0:
             print("  Processed " + str(count) + "/" + str(total) + "...")
 
         result = score_stock(symbol)
         if result and result["score"] >= MIN_SCORE:
+            stage1.append(result)
+
+    stage1.sort(key=lambda x: x["score"], reverse=True)
+    shortlist = stage1[:50]  # top 50 technical picks
+    print("Stage 1 done: " + str(len(shortlist)) + " stocks shortlisted")
+
+    # ── STAGE 2: FETCH FUNDAMENTALS FOR SHORTLIST ONLY (2 mins) ──
+    print("Stage 2: Fetching fundamentals for top " + str(len(shortlist)) + " stocks...")
+    for r in shortlist:
+        if r["symbol"] not in fund_cache:
+            fund = fetch_fundamentals(r["symbol"])
+            fund_cache[r["symbol"]] = fund
+
+    # ── RESCORE WITH FUNDAMENTALS ──
+    print("Rescoring with fundamentals...")
+    results = []
+    for r in shortlist:
+        result = score_stock(r["symbol"])
+        if result:
             results.append(result)
 
     results.sort(key=lambda x: x["score"], reverse=True)
