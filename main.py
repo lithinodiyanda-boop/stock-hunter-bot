@@ -271,7 +271,7 @@ def calculate_rsi(closes, period=14):
 
 def score_stock(symbol):
     history = nse_data_cache.get(symbol)
-    if not history or len(history) < 50:
+    if not history or len(history) < 15:
         return None
 
     closes  = [d["close"]  for d in history]
