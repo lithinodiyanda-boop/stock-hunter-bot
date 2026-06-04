@@ -580,15 +580,12 @@ def start_scheduler():
     load_nse_history(90)
 
     for day in ["monday", "tuesday", "wednesday", "thursday", "friday"]:
-        getattr(schedule.every(), day).at("09:00").do(morning_data_load)
-        getattr(schedule.every(), day).at("10:00").do(run_scan)
-        getattr(schedule.every(), day).at("11:00").do(run_scan)
-        getattr(schedule.every(), day).at("12:00").do(run_scan)
-        getattr(schedule.every(), day).at("13:00").do(run_scan)
-        getattr(schedule.every(), day).at("14:00").do(run_scan)
-        getattr(schedule.every(), day).at("15:00").do(run_scan)
+        getattr(schedule.every(), day).at("03:30").do(morning_data_load)  # 9:00 IST
+        getattr(schedule.every(), day).at("04:30").do(run_scan)   # 10:00 IST (7:30 Bahrain)
+        getattr(schedule.every(), day).at("07:00").do(run_scan)   # 12:30 IST (10:00 Bahrain)
+        getattr(schedule.every(), day).at("09:00").do(run_scan)   # 14:30 IST (12:00 Bahrain)
 
-    schedule.every().day.at("00:01").do(daily_reset)
+    schedule.every().day.at("18:31").do(daily_reset)  # 00:01 IST
 
     while True:
         schedule.run_pending()
