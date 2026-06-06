@@ -553,6 +553,11 @@ def run_scan():
 # ============================================================
 # DAILY RESET + DATA REFRESH
 # ============================================================
+def keepalive():
+    send_whatsapp("🤖 5% Hunter Bot — Active")
+    print("Keepalive sent.")
+
+
 def daily_reset():
     alerted_today.clear()
     fund_cache.clear()
@@ -586,6 +591,7 @@ def start_scheduler():
         getattr(schedule.every(), day).at("09:00").do(run_scan)   # 14:30 IST (12:00 Bahrain)
 
     schedule.every().day.at("18:31").do(daily_reset)  # 00:01 IST
+    schedule.every().day.at("04:00").do(keepalive)  # 9:30am IST daily keepalive
 
     while True:
         schedule.run_pending()
